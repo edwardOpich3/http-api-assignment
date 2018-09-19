@@ -6,7 +6,75 @@
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
   <script type="text/babel">
+    const handleResponse = (xhr) => {
+      // do stuff with the xhr response
+      const response = xhr.responseText;
+      const contentType = xhr.getResponseHeader("Content-Type");
+      const contentDiv = document.querySelector("#content");
+      contentDiv.innerHTML = "";
 
+      const b = document.createElement("b");
+      const p = document.createElement("p");
+
+      // Parse XML
+      if(contentType === "text/xml"){
+        const parser = new DOMParser();
+        const parsedResponse = parser.parseFromString(response, "text/xml");
+
+        if(parsedResponse.querySelector("id")){
+          b.innerHTML = parsedResponse.querySelector("id").innerHTML;
+        }
+
+        else{
+          b.innerHTML = "success";
+        }
+
+        p.innerHTML = "Message: " + parsedResponse.querySelector("message").innerHTML;
+      }
+
+      // Parse JSON
+      else if(contentType === "application/json"){
+        const parsedResponse = JSON.parse(response);
+
+        if(parsedResponse.id){
+          b.innerHTML = parsedResponse.id;
+        }
+
+        else{
+          b.innerHTML = "success";
+        }
+
+        p.innerHTML = "Message: " + parsedResponse.message;
+      }
+
+      contentDiv.appendChild(b);
+      contentDiv.appendChild(p);
+    };
+
+    const ajaxRequest = (e) => {
+      const page = document.querySelector("#page");
+      const type = document.querySelector("#type");
+
+      const xhr = new XMLHttpRequest();
+
+      xhr.onload = () => handleResponse(xhr);
+
+      xhr.open("GET", page.value);
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      xhr.setRequestHeader("Accept", type.value);
+
+      xhr.send();
+
+      e.preventDefault();
+      return false;
+    };
+
+    const init = () => {
+      const send = document.querySelector("#send");
+      send.addEventListener("click", ajaxRequest);
+    };
+
+    window.onload = init;
   </script>
 </head>
 <body>
